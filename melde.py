@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+
+""" melde.py contains library methods for comparing and sorting Viennese Meldezettel-sorted words. """
+
 import sys,os,math
-url = "http://www.familysearch.org/Eng/Library/fhlcatalog/supermainframeset.asp?display=titlefilmnotes&columns=*%2C0%2C0&titleno=176296&disp=Meldezettel+%28m%C3%A4nnliche+und+weibli++"
 
 """
 NOTE: Replace silent letters like 'h' with 'b'  Like Schuh is Schup.
@@ -10,51 +12,13 @@ TODO: Fix index.  Some obvious issues:
 Sachari should be Pachari or something.
 """
 
-a = """
-ABCDEFabcdefÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØ
-ÙÚÛÜİ
-àáâãäåæèéêëìíîïğñòóôõöùúûüışÿ
-"""
-
-"""
-  </TR>
-  <TR VALIGN='TOP'>
-    <TD BGCOLOR='white' WIDTH='75%'>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-Aberle            </FONT>
-    </TD>
-    <TD BGCOLOR='white' NOWRAP>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-FHL INTL Film <BR>
-1277215            </FONT>
-    </TD>
-  </TR>
-"""
 import re
 
-#~ verbose = True
+# verbose can be set to True for debug/testing printouts
 verbose = False
 
-#~ input = """
-#~ Aba
-#~ Abele
-#~ Appelbauer
-#~ Aberle
-#~ Achs
-#~ Axmann
-#~ Agoston
-#~ Adlerblum
-#~ Schächter
-#~ Schober
-#~ Schuck
-#~ Schubacz
-#~ Sadeau
-#~ """.split()
-
-#~ print input
-
-#~ s = u"\u02b9"
-#~ print s.encode('utf-8')
+# 'chars' contains a tuple of strings, where each element is a space-delimited collection
+# of "identical" characters as far as the sorting algorithm is concerned.
 chars = (
     'A a \xc3\xa1 \xc3\x81 \xc3\xa0 \xc7\x8e \xc3\xa3', # á
     'Au au',
@@ -82,13 +46,10 @@ chars = (
     'Z z dz ds',
     ', ( ) ! \xca\xb9 \' \xcc\xae ^ \xef\xb8\xa1 : - .' # ???
 )
-#~ chars = [c.encode('utf8') for c in chars]
 
 char_map = {}
 for i,charline in enumerate(chars):
     for c in charline.split():
-        #~ print c.decode('utf8').encode('latin-1','replace')
-        #~ char_map[unicode(unicode(c,'latin-1').encode('utf8'),'utf8')] = i+1
         char_map[c.decode('utf8')] = i+1
 
 if verbose:
@@ -105,29 +66,25 @@ if verbose:
     print keys_by_length
 
 superverbose = False
-def codify(n):
+
+def codify(name):
+    """ Accept a unicode string and return a list of ints representing each 
+    character in the "meldezettel canonical" way. 
+    """
     #~ ### a hack because starting Cz's seem to be soft, not hard.
     #~ if n.startswith("Cz"):
         #~ print "did something",n
         #~ n = "S" + n[2:]
         #~ print n
 
-    if superverbose: print "typen", str(type(n)), "<br/>"
-    assert(type(n) == unicode)
-    name = n
-    if superverbose: print "typen", str(type(n)), "<br/>"
-    #if superverbose: print "name",name.encode('latin-1','replace')
+    assert(type(name) == unicode)
 
     for key in sorted(keys_by_length.keys(), reverse=True):
         for k,v in keys_by_length[key]:
             if superverbose and name != name.replace(k," %d "%v):
                 #~ print "key",key
                 print "key",k.encode('latin-1','replace'),"value",v,"name",name.encode('latin-1','replace'),type(k),type(v),type(name)
-            #~ for i,ch in enumerate(name):
-                #~ if ch == k:
-                    #~ name[i] = v
             name = name.replace(k," %d "%v)
-    #~ print name.encode('latin-1','replace')
     try:
         simplified = [int(x) for x in name.split()]
     except (UnicodeEncodeError, ValueError):
@@ -145,7 +102,6 @@ def codify(n):
         if not vowel(s):
             final.append(accum)
             accum = []
-    #~ print n,final
 
     if len(accum) > 0 and len(final) == 0:
         ## this is a hack, for "Aue" or other no-vowels.
@@ -155,9 +111,13 @@ def codify(n):
     return final
 
 def vowel(c):
+    """ Return true if the input character 'c' is a Meldezettel vowel. """
     return c<=7
 
 class Meldename:
+    """ An object representing one Meldezettel name that can be compared/sorted
+    with others of its kind. """
+    
     def __init__(self,name,film = None):
         self.name = name.capitalize()
         self.code = codify(self.name)
@@ -229,27 +189,6 @@ class Meldename:
 
     def __str__(self):
         return "%15s/<%s>"%(self.name.encode('latin-1','replace'), " ".join(["-".join([str(a) for a in x]) for x in self.code]))
-
-#~ M = []
-#~ for n in input:
-    #~ M.append(Meldename(n))
-
-#~ M.sort()
-
-#~ print [str(m) for m in M]
-
-#~ print "-----"
-#~ print Meldename("Secher")
-#~ print Meldename("Schechter")
-#~ print Meldename("")
-#~ assert Meldename("Secher") < Meldename("Schechter")
-
-
-#~ print "-----"
-#men
-#~ m = "Secher Scheschter Sautschek Schechter Schusther Schreiner Schreiber Siskind Sauka Schachien Sekanina Schicho Sigal Sigl Sachs Springinsfeld Sruba Schrott Schestorad"
-#women
-#~ m = "Sas Siss Schischurk Schrotte Schechter Scheschter Schuster Schreiner Schrei Schreck"
 
 def userSpecifiedList(m = "Schechter Scheschter Schatz Schitsch Schisscher Schuster Schuts Scheis"):
     M = [Meldename(a) for a in m.split()]

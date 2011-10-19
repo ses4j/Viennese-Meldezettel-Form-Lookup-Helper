@@ -1,0 +1,25 @@
+= Viennese Meldezettel Form Lookup Helper =
+
+This set of scripts is intended to help find records in the Vienna Meldezettel (männliche 
+und weibliche Personen), 1850-1928.
+
+You can use the script here:
+
+http://scopiebreskford.com/tng/meldezettel.cgi
+
+According to the microfilm listing, the Meldezettel are POPULATION REGISTERS for individual
+residents of the city of Vienna, Austria.  The cards include name, birth date and place, 
+marital status, old and new places of residence, dates of arrival and departure. Occasionally 
+the name of spouse and children are listed. Most records range from 1890 to 1925. The 
+beginning name on each microfilm is shown. The same name may also appear on the preceeding 
+microfilm. All male (männliche) names are filed first, followed by all female (weibliche) 
+names in a separate sequence.
+
+The form will return a list of suggested FHL form numbers you can try and order from any 
+Family History Library branch or from the Salt Lake HQ.
+
+PLEASE NOTE: In my experience, the sorting on the FHL films is rather inconsistent, and I'm 
+sure the algorithm used by this web page is imperfect as well. As such, your mileage may vary. 
+If you're lucky, the name you're searching for will be in the first record suggested, but that
+only happens maybe half the time. Usually the record will be on ONE of the films suggested but
+even that is not always the case.

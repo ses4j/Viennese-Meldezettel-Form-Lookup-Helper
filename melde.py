@@ -229,59 +229,6 @@ def testOrderedSetForConsistency(meldeinput):
 #~ print Meldename('Appelt')# < Meldename('Appelt')
 #~ sys.exit(0)
 
-test = """
-  <TR VALIGN='TOP'>
-    <TD BGCOLOR='white' WIDTH='75%'>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-Aba            </FONT>
-    </TD>
-    <TD BGCOLOR='white' NOWRAP>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-FHL INTL Film <BR>
-1277212            </FONT>
-    </TD>
-  </TR>
-  <TR VALIGN='TOP'>
-    <TD BGCOLOR='white' WIDTH='75%'>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-Czerni            </FONT>
-    </TD>
-    <TD BGCOLOR='white' NOWRAP>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-VAULT INTL Film <BR>
-1431046            </FONT>
-    </TD>
-  </TR>
-  <TR VALIGN='TOP'>
-    <TD BGCOLOR='white' WIDTH='75%'>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-Czerny, Anton            </FONT>
-    </TD>
-    <TD BGCOLOR='white' NOWRAP>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-VAULT INTL Film <BR>
-1431046            </FONT>
-    </TD>
-  </TR>
-  <TR VALIGN='TOP'>
-    <TD BGCOLOR='white' WIDTH='75%'>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-Czerny, Gabriel            </FONT>
-    </TD>
-    <TD BGCOLOR='white' NOWRAP>
-            <FONT FACE='Arial Unicode MS,Arial,sans-serif' SIZE='2'>
-VAULT INTL Film <BR>
-1431047            </FONT>
-    </TD>
-  </TR>
-
-"""
-
-regex = "<TR VALIGN=\'TOP\'\>.+?SIZE='2'>\s*([^<]*)\s*</FONT>.+?SIZE='2'>\s*(.+?)\s*</FONT>"
-input = re.findall(regex,test,re.DOTALL|re.UNICODE)
-input = [(i.strip(),j.replace('<BR>\n','')) for (i,j) in input]
-#~ print input
-#~ sys.exit(1)
 import cPickle
 def writeToDatabase(filename):
     source = unicode( open(filename).read(), 'utf8')
@@ -290,7 +237,6 @@ def writeToDatabase(filename):
     meldeinput = [Meldename(a[0],a[1]) for a in input]
     cPickle.dump(meldeinput, open(filename + '.p','wb'), 2)
 
-#~ writeToDatabase()
 def readFromDatabase(filename):
     return cPickle.load(open(filename + '.p','rb'))
 
@@ -388,7 +334,7 @@ def findProblemAreas(database, threshold = 20):
     return problems
 
 if __name__=='__main__':
-
+    """ Everything in here is just messy code trying out various tests. """
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
     #~ print scoreComparisonAlgorithm([1.0, 2.0, 3.0, 2.9])
@@ -448,23 +394,7 @@ if __name__=='__main__':
         printPossibleFilms(res)
         print Meldename(name)
 
-    #~ print userSpecifiedList("Jenik Jindra Jonke Junk Jaresch Jereb Jiroutva")
-    #~ print userSpecifiedList("Beer Baier Bayer Bercka Perlmutter Beran")
-    #~ print userSpecifiedList('''Innemann
-#~ Jarocinski
-#~ Jarosch
-#~ Jerosch
-#~ Jruschek
-#~ Jirika
-#~ Jerusalem
-#~ Jiricek''')
-
-
-    #~ possibles( "Sester", weib_database, verbose=False)
-    #~ possibles( "Schick", mann_database, verbose=True)
     possibles( u"WELISCH", mann_database, verbose=False)
-    #~ printPossibleFilms( findPossibleFilms("Sester", weib_database, verbose=False) )
-
 
     sys.exit(0)
     #~ print userSpecifiedList('Schester Schreiber Schreiner Schrott Sruba Sautschek Schestorad Susskind')

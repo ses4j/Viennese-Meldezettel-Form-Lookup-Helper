@@ -70,7 +70,7 @@ form=cgi.FieldStorage()
 if on_website:
     searchName = form.getfirst("name", None)
 else:
-    searchName = form.getfirst("name", u"Schächter")
+    searchName = form.getfirst("name", u"Schächter")  # test code
 encoding = form.getfirst("_charset_", "UTF-8")
 if searchName:
     searchName = searchName.decode(encoding)

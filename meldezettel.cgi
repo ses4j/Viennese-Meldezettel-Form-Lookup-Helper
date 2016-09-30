@@ -127,6 +127,9 @@ if searchName is not None:
     weib_database = melde.readFromDatabase(SCRIPT_DIR + '/melde_weib.html')
     printTable(meldename, weib_database, "Weibliche (female) Forms")
 
+    m1930_database = melde.readFromDatabase(SCRIPT_DIR + '/melde_1930.json')
+    printTable(meldename, m1930_database, "1930 Forms")
+
 print """<h2>Description of Organization of Meldezettel Films</h2>
 The Meldezettel forms are in a distinctly non-trivial order.  I don't know if it was
 intended to challenge future genealogists or if the organizer enjoyed brainteasers or what,

@@ -22,13 +22,13 @@ verbose = False
 # 'chars' contains a tuple of strings, where each element is a space-delimited collection
 # of "identical" characters as far as the sorting algorithm is concerned.
 chars = (
-    'A a \xc3\xa1 \xc3\x81 \xc3\xa0 \xc7\x8e \xc3\xa3',  # �
+    'A a \xc3\xa1 \xc3\x81 \xc3\xa0 \xc7\x8e \xc3\xa3',  # á
     'Au au',
     'E \xc3\x84 \xc3\x96 e ee aye aie \xc3\xa4 \xc3\xb6 \xc4\x9a \xc4\x9b \xc3\xa9 \xc3\xaa',  # e
     'Ei Eu Ej Ey Ai Aj Ay ei ey eu ej ai aj ay',
     'i ie j y \xc3\xbc \xc3\x9c \xc3\xad \xc3\xbd',
-    'o oe ou \xc3\xb3',
-    'u \xc3\xba \xc5\xad',
+    'o oe ou \xc3\xb3 \xc5\x91',  # ő
+    'u \xc3\xba \xc5\xad \xc5\xb1',  # c5 b0 ű
     '',  # placeholder for ALLVOWELS
     '',
     'I Ie J Y',
@@ -41,9 +41,9 @@ chars = (
     'H h',
     'L l hl',
     'M m',
-    'N Nck Ng Nk n nck ng nk nn ń',
+    'N Nck Ng Nk n nck ng nk nn Å„',
     'R r hr \xc5\x99',
-    'S Sh Sch Sz Tz s sch sz tsch tz \xc3\x9f \xc5\xbd \xc5\xbe \xc5\xa0 \xc5\xa1 \xc5\x9b \xc5\xba st ss',  # \xc3\x9f (sharp s) �
+    'S Sh Sch Sz Tz s sch sz tsch tz \xc3\x9f \xc5\xbd \xc5\xbe \xc5\xa0 \xc5\xa1 \xc5\x9b \xc5\xba st ss',  # \xc3\x9f (sharp s) ž
     'St',
     'Z z dz ds',
     ', ( ) ! \xca\xb9 \' \xcc\xae ^ \xef\xb8\xa1 : - .'  # ???
@@ -82,6 +82,7 @@ def codify(name):
 
     assert(type(name) == unicode)
 
+    # print "[codify]", name.encode('latin-1', 'replace')
     for key in sorted(keys_by_length.keys(), reverse=True):
         for k, v in keys_by_length[key]:
             if superverbose and name != name.replace(k, " %d " % v):
@@ -92,11 +93,11 @@ def codify(name):
         simplified = [int(x) for x in name.split()]
     except (UnicodeEncodeError, ValueError):
         print "bad name:",
-        for c in n:
+        for c in name:
             print ord(c),
-        print "len", len(n)
-        print "in latin-1:", n.encode('latin-1', 'replace')
-        print "in utf-8:", n.encode('utf-8', 'replace')
+        print "len", len(name)
+        print "in latin-1:", name.encode('latin-1', 'replace')
+        print "in utf-8:", name.encode('utf-8', 'replace')
         raise
     final = []
     accum = []
@@ -261,6 +262,48 @@ def writeToDatabase(filename):
     cPickle.dump(meldeinput, open(filename + '.p', 'wb'), 2)
 
 
+def writeToDatabaseFromJson(filename):
+    def cleanName(n):
+        return n.split(',')[0]
+
+    def add(names, n, location):
+        if n == '????':
+            return
+        names.append(Meldename(cleanName(n), location))
+
+    # source = unicode(open(filename).read(), 'utf8')
+    # input = re.findall(regex, source, re.DOTALL | re.UNICODE)
+    import json
+
+    source = json.load(open(filename))
+    # input = [(i.strip(), j.replace('<BR>\n', '')) for (i, j) in input]
+
+    meldeinput = []
+    for item in source['film_note']:
+        filmno = item['filmno'][0]
+        geo_collection = item['geo_collection'][0]
+        shelf = item['shelf'][0]
+        location = item['location'][0]
+        text = item['text'][0]
+
+        if text.lower().startswith("meldezettel"):
+            print "SKIPPED", text.encode('utf8', 'replace')
+            continue
+        name = text
+        location = "{}, {} {} {}".format(location, geo_collection, shelf, filmno)
+        # print name.encode('utf8', 'replace'), "---", location.encode('utf8', 'replace')
+        if ' - ' in name:
+            names = name.split(' - ')
+            assert len(names) == 2 or names[0].startswith('Huper') or names[0].startswith('Horasch')
+
+            add(meldeinput, names[0], location)
+            add(meldeinput, names[1], location)
+        else:
+            add(meldeinput, name, location)
+
+    cPickle.dump(meldeinput, open(filename + '.p', 'wb'), 2)
+
+
 def readFromDatabase(filename):
     return cPickle.load(open(filename + '.p', 'rb'))
 
@@ -381,14 +424,14 @@ if __name__ == '__main__':
     #~ sys.exit(1)
     #~ print "Weiblich"
     #~ changeAlgo = True
-    changeAlgo = True
+    changeAlgo = False
 
     if changeAlgo:
-        writeToDatabase(SCRIPT_DIR + '/melde-1930.html')
+        writeToDatabaseFromJson(SCRIPT_DIR + '/melde_1930.json')
         # writeToDatabase(SCRIPT_DIR + '/melde_weib.html')
         # writeToDatabase(SCRIPT_DIR + '/melde_mann.html')
 
-    m1930_database = readFromDatabase(SCRIPT_DIR + '/melde-1930.html')
+    m1930_database = readFromDatabase(SCRIPT_DIR + '/melde_1930.json')
     weib_database = readFromDatabase(SCRIPT_DIR + '/melde_weib.html')
     mann_database = readFromDatabase(SCRIPT_DIR + '/melde_mann.html')
     if changeAlgo:
@@ -437,7 +480,7 @@ if __name__ == '__main__':
         printPossibleFilms(res)
         print Meldename(name)
 
-    possibles(u"WELISCH", mann_database, verbose=False)
+    possibles(u"Zudtssch", m1930_database, verbose=False)
 
     sys.exit(0)
     #~ print userSpecifiedList('Schester Schreiber Schreiner Schrott Sruba Sautschek Schestorad Susskind')

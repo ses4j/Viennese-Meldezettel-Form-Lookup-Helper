@@ -62,6 +62,9 @@ def printTable(meldename, database, header = "Unnamed header"):
     ucgiprint(u"<h2>%s</h2>" % header)
     ucgiprint(u"<table width='750px'> <tr><th width='50px'>Score</th><th width='250px'>1<sup>st</sup> surname on film</th><th width='250px'>(index) film number</th><th width='200px'>code</th></tr>")
     for (score, meldename, index) in sorted(results, reverse=True):
+        name = meldename.name
+        if hasattr(meldename, 'gender'):
+            name = meldename.name + " (" + meldename.gender")"
         ucgiprint(u"<tr><td>%.1f%%</td><td>%s</td><td>(%d) %s</td><td>%s</td></tr>" % (score, meldename.name, index, meldename.film, formatCode(meldename.code)))
     ucgiprint(u"</table>")
 
@@ -128,7 +131,10 @@ if searchName is not None:
     printTable(meldename, weib_database, "Weibliche (female) Forms")
 
     m1930_database = melde.readFromDatabase(SCRIPT_DIR + '/melde_1930.json')
-    printTable(meldename, m1930_database, "1930 Forms")
+    printTable(meldename, m1930_database, "1930-1940 Forms")
+
+    m1940_database = melde.readFromDatabase(SCRIPT_DIR + '/melde_1940.json')
+    printTable(meldename, m1930_database, "1940-1948 Forms")
 
 print """<h2>Description of Organization of Meldezettel Films</h2>
 The Meldezettel forms are in a distinctly non-trivial order.  I don't know if it was

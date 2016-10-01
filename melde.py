@@ -26,8 +26,8 @@ chars = (
     'Au au',
     'E \xc3\x84 \xc3\x96 e ee aye aie \xc3\xa4 \xc3\xb6 \xc4\x9a \xc4\x9b \xc3\xa9 \xc3\xaa',  # e
     'Ei Eu Ej Ey Ai Aj Ay ei ey eu ej ai aj ay',
-    'i ie j y \xc3\xbc \xc3\x9c \xc3\xad \xc3\xbd',
-    'o oe ou \xc3\xb3 \xc5\x91',  # ő
+    'i ie j y \xc3\xbc \xc3\x9c \xc3\xad \xc3\xbd \xc4\xad',  # ĭ
+    'o oe ou \xc3\xb3 \xc5\x91 \xc3\xb2',  # ő ò
     'u \xc3\xba \xc5\xad \xc5\xb1',  # c5 b0 ű
     '',  # placeholder for ALLVOWELS
     '',
@@ -124,10 +124,11 @@ class Meldename:
     """ An object representing one Meldezettel name that can be compared/sorted
     with others of its kind. """
 
-    def __init__(self, name, film=None):
+    def __init__(self, name, film=None, gender=None):
         self.name = name.capitalize()
         self.code = codify(self.name)
         self.film = str(film)
+        self.gender = gender
 
     def __cmp__(self, other):
         # <0 if self < other
@@ -263,13 +264,17 @@ def writeToDatabase(filename):
 
 
 def writeToDatabaseFromJson(filename):
+    print "[writeToDatabaseFromJson]", filename
+
     def cleanName(n):
         return n.split(',')[0]
 
-    def add(names, n, location):
+    def add(names, n, location, gender):
         if n == '????':
             return
-        names.append(Meldename(cleanName(n), location))
+        # if not gender:
+        #     raise RuntimeError()
+        names.append(Meldename(cleanName(n), location, gender))
 
     # source = unicode(open(filename).read(), 'utf8')
     # input = re.findall(regex, source, re.DOTALL | re.UNICODE)
@@ -286,9 +291,24 @@ def writeToDatabaseFromJson(filename):
         location = item['location'][0]
         text = item['text'][0]
 
+        print text.encode('utf8', 'replace')
+
+        gender = None
         if text.lower().startswith("meldezettel"):
             print "SKIPPED", text.encode('utf8', 'replace')
+            if 'weib' in text.lower():
+                gender = 'W'
+            elif 'mann' in text.lower() or u'MÄNN' in text or u'männ' in text:
+                gender = 'M'
+            else:
+                raise RuntimeError('unknown gender')
             continue
+
+        if text.lower() == 'MELDEKARTEI (FAMILIEN NAMEN):':
+            print "SKIPPED", text.encode('utf8', 'replace')
+            continue
+
+        # continue
         name = text
         location = "{}, {} {} {}".format(location, geo_collection, shelf, filmno)
         # print name.encode('utf8', 'replace'), "---", location.encode('utf8', 'replace')
@@ -296,10 +316,12 @@ def writeToDatabaseFromJson(filename):
             names = name.split(' - ')
             assert len(names) == 2 or names[0].startswith('Huper') or names[0].startswith('Horasch')
 
-            add(meldeinput, names[0], location)
-            add(meldeinput, names[1], location)
+            add(meldeinput, names[0], location, gender)
+            add(meldeinput, names[1], location, gender)
         else:
-            add(meldeinput, name, location)
+            if name.startswith('NACHTRAG: '):
+                name = name.replace('NACHTRAG: ', '')
+            add(meldeinput, name, location, gender)
 
     cPickle.dump(meldeinput, open(filename + '.p', 'wb'), 2)
 
@@ -427,10 +449,12 @@ if __name__ == '__main__':
     changeAlgo = False
 
     if changeAlgo:
+        writeToDatabaseFromJson(SCRIPT_DIR + '/melde_1940.json')
         writeToDatabaseFromJson(SCRIPT_DIR + '/melde_1930.json')
         # writeToDatabase(SCRIPT_DIR + '/melde_weib.html')
         # writeToDatabase(SCRIPT_DIR + '/melde_mann.html')
 
+    m1940_database = readFromDatabase(SCRIPT_DIR + '/melde_1940.json')
     m1930_database = readFromDatabase(SCRIPT_DIR + '/melde_1930.json')
     weib_database = readFromDatabase(SCRIPT_DIR + '/melde_weib.html')
     mann_database = readFromDatabase(SCRIPT_DIR + '/melde_mann.html')
@@ -439,6 +463,8 @@ if __name__ == '__main__':
         #~ mann: ('sum', 31232.0, 'avg', 16.737406216505896, 'max', 1291.0, 'median', 5.0)        #~ incorrect 19377 / 898470 (0.978433 correct)
         #~ incorrect 22459 / 1740045 (0.987093 correct)
         #~ print "weib:",scoreComparisonAlgorithm(weib_database)
+        print "1940:",
+        print scoreComparisonAlgorithm(m1940_database)
         print "1930:",
         print scoreComparisonAlgorithm(m1930_database)
         print "mann:",

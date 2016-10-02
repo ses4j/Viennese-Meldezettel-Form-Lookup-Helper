@@ -63,8 +63,8 @@ def printTable(meldename, database, header = "Unnamed header"):
     ucgiprint(u"<table width='750px'> <tr><th width='50px'>Score</th><th width='250px'>1<sup>st</sup> surname on film</th><th width='250px'>(index) film number</th><th width='200px'>code</th></tr>")
     for (score, meldename, index) in sorted(results, reverse=True):
         name = meldename.name
-        if hasattr(meldename, 'gender'):
-            name = meldename.name + " (" + meldename.gender")"
+        if hasattr(meldename, 'gender') and meldename.gender:
+            name = meldename.name + u" (" + meldename.gender + u")"
         ucgiprint(u"<tr><td>%.1f%%</td><td>%s</td><td>(%d) %s</td><td>%s</td></tr>" % (score, meldename.name, index, meldename.film, formatCode(meldename.code)))
     ucgiprint(u"</table>")
 
@@ -114,7 +114,7 @@ if searchName is not None:
         time.strftime("%x %X %Z", time.localtime()),
         os.environ['REMOTE_ADDR'], 
         searchName, 
-        os.environ['HTTP_ACCEPT_LANGUAGE']
+        os.environ.get('HTTP_ACCEPT_LANGUAGE', 'en')
     ])
     open('meldezettel.log', 'a').write(logline + '\n')
     #~ print "<h2>Search Results for: </h2><ul><li>Name: %s</li><li>Code: %s</li></ul>" % (meldename.name, formatCode(meldename.code))

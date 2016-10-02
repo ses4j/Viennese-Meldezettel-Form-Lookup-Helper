@@ -207,7 +207,10 @@ class Meldename:
         return cmp
 
     def __str__(self):
-        return "%15s/<%s>" % (self.name.encode('latin-1', 'replace'), " ".join(["-".join([str(a) for a in x]) for x in self.code]))
+        return "%15s/<%s>/%s" % (
+            self.name.encode('latin-1', 'replace'), 
+            " ".join(["-".join([str(a) for a in x]) for x in self.code]),
+            self.gender)
 
 
 def userSpecifiedList(m="Schechter Scheschter Schatz Schitsch Schisscher Schuster Schuts Scheis"):
@@ -284,6 +287,7 @@ def writeToDatabaseFromJson(filename):
     # input = [(i.strip(), j.replace('<BR>\n', '')) for (i, j) in input]
 
     meldeinput = []
+    gender = None
     for item in source['film_note']:
         filmno = item['filmno'][0]
         geo_collection = item['geo_collection'][0]
@@ -293,7 +297,6 @@ def writeToDatabaseFromJson(filename):
 
         print text.encode('utf8', 'replace')
 
-        gender = None
         if text.lower().startswith("meldezettel"):
             print "SKIPPED", text.encode('utf8', 'replace')
             if 'weib' in text.lower():

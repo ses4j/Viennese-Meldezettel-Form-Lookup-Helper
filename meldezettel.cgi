@@ -64,8 +64,9 @@ def printTable(meldename, database, header = "Unnamed header"):
     for (score, meldename, index) in sorted(results, reverse=True):
         name = meldename.name
         if hasattr(meldename, 'gender') and meldename.gender:
-            name = meldename.name + u" (" + meldename.gender + u")"
-        ucgiprint(u"<tr><td>%.1f%%</td><td>%s</td><td>(%d) %s</td><td>%s</td></tr>" % (score, meldename.name, index, meldename.film, formatCode(meldename.code)))
+            g = u"männliche" if meldename.gender == 'M' else "weibliche"
+            name = meldename.name + u" (" + g + u")"
+        ucgiprint(u"<tr><td>%.1f%%</td><td>%s</td><td>(%d) %s</td><td>%s</td></tr>" % (score, name, index, meldename.film, formatCode(meldename.code)))
     ucgiprint(u"</table>")
 
 form=cgi.FieldStorage()
